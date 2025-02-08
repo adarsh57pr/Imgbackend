@@ -12,7 +12,7 @@ const { Buffer } = require('buffer');
 const app = express();
 const port = 4000;
 app.use(cors({
-  origin: 'https://img-frontend-kappa.vercel.app/',  // or '*' to allow all domains (not recommended for production)
+  origin: '*',  // or '*' to allow all domains (not recommended for production)
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
