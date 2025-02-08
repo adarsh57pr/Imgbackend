@@ -11,7 +11,12 @@ const { Buffer } = require('buffer');
 
 const app = express();
 const port = 4000;
-app.use(cors());
+app.use(cors({
+  origin: 'https://img-frontend-kappa.vercel.app/',  // or '*' to allow all domains (not recommended for production)
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
+
 app.use(express.json({ limit: '50mb' }));
 
 
@@ -165,7 +170,7 @@ app.post('/search', async (req, res) => {
     const result = await request.query(query);
 
     // Set a lower threshold for similarity to get more results
-    const similarityThreshold = 0.6;  // Adjusted lower threshold to capture more similar images
+    const similarityThreshold = 0.5;  // Adjusted lower threshold to capture more similar images
     const similarImages = [];
 
     // Iterate over each image stored in the database
@@ -203,226 +208,12 @@ app.post('/search', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port,'0.0.0.0', () => {
   console.log(`Server running on http://localhost:${port}`);
 });
 
 
 
-// const express = require('express');
-// const multer = require('multer');
-// const sharp = require('sharp');
-// const mssql = require('mssql');
-// require('dotenv').config();
-// const fs = require('fs');
-// const path = require('path');
-// const cors = require('cors');
-// const { Buffer } = require('buffer');
-// const tf = require('@tensorflow/tfjs'); // Use @tensorflow/tfjs for browser-based TensorFlow
 
-// const app = express();
-// const port = 4000;
-// app.use(cors());
-// app.use(express.json({ limit: '50mb' }));
 
-// // Database configuration
-// const dbConfig = {
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   server: process.env.DB_SERVER,
-//   database: process.env.DB_BASE,
-//   options: {
-//     encrypt: true,
-//     trustServerCertificate: true,
-//   },
-// };
 
-// // Connect to the database
-// mssql.connect(dbConfig)
-//   .then(() => {
-//     console.log('Connected to SQL Server');
-//   })
-//   .catch((err) => {
-//     console.error('Error connecting to SQL Server:', err);
-//   });
-
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// // Save the base64 image to disk
-// const saveBase64Image = (base64Str) => {
-//   return new Promise((resolve, reject) => {
-//     const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-//     if (!matches) {
-//       reject('Invalid Base64 string');
-//     } else {
-//       const buffer = Buffer.from(matches[2], 'base64');
-//       const fileName = Date.now() + '.png';
-//       const filePath = path.join(__dirname, 'uploads', fileName);
-//       fs.writeFile(filePath, buffer, (err) => {
-//         if (err) {
-//           reject('Error saving image file');
-//         } else {
-//           resolve(filePath);
-//         }
-//       });
-//     }
-//   });
-// };
-
-// // Image preprocessing function to resize and normalize the image
-// const processImage = async (imagePath) => {
-//   const image = await sharp(imagePath)
-//     .resize(32, 32) // Resize to 32x32 (size expected by CNN)
-//     .toBuffer();
-
-//   // Convert image to tensor using tf.browser.fromPixels after creating a buffer from sharp
-//   const imageBuffer = await sharp(image).toBuffer();
-//   const uint8Array = new Uint8Array(imageBuffer);
-//   const tensor = tf.browser.fromPixels(uint8Array).toFloat().div(tf.scalar(255)); // Normalize pixel values
-//   return tensor.expandDims(0); // Add batch dimension (1 image)
-// };
-
-// // CNN Model creation
-// function createCNNModel() {
-//   const model = tf.sequential();
-
-//   model.add(tf.layers.conv2d({
-//     inputShape: [32, 32, 3], // CIFAR-10 images are 32x32 RGB
-//     filters: 32,
-//     kernelSize: 3,
-//     activation: 'relu',
-//   }));
-
-//   model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
-//   model.add(tf.layers.conv2d({
-//     filters: 64,
-//     kernelSize: 3,
-//     activation: 'relu',
-//   }));
-
-//   model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
-//   model.add(tf.layers.flatten());
-//   model.add(tf.layers.dense({
-//     units: 128,
-//     activation: 'relu',
-//   }));
-
-//   model.add(tf.layers.dense({
-//     units: 10,  // Assuming 10 classes (e.g., CIFAR-10)
-//     activation: 'softmax',
-//   }));
-
-//   model.compile({
-//     optimizer: 'adam',
-//     loss: 'categoricalCrossentropy',
-//     metrics: ['accuracy'],
-//   });
-
-//   return model;
-// }
-
-// // POST route for uploading and classifying image
-// app.post('/upload', async (req, res) => {
-//   const { imageBase64 } = req.body;
-
-//   if (!imageBase64) {
-//     return res.status(400).json({ message: 'No image data provided' });
-//   }
-
-//   try {
-//     // Save the uploaded image
-//     const filePath = await saveBase64Image(imageBase64);
-
-//     // Process the image and convert it to a tensor
-//     const imageTensor = await processImage(filePath);
-
-//     // Create the CNN model
-//     const model = createCNNModel();
-
-//     // You can optionally load a pre-trained model here:
-//     // const model = await tf.loadLayersModel('file://path/to/model.json');
-
-//     // Run the image through the model for prediction
-//     const prediction = model.predict(imageTensor);
-
-//     // Get the predicted class
-//     const predictedClass = prediction.argMax(-1).dataSync()[0];
-
-//     // Save prediction to the database (optional)
-//     const query = `
-//       INSERT INTO ImagePredictions (filename, predicted_class) 
-//       VALUES (@filename, @predictedClass)
-//     `;
-//     const request = new mssql.Request();
-//     request.input('filename', mssql.NVarChar, path.basename(filePath));
-//     request.input('predictedClass', mssql.Int, predictedClass);
-
-//     await request.query(query);
-
-//     // Respond with the predicted class
-//     res.json({
-//       message: 'Image uploaded and classified',
-//       predictedClass,
-//     });
-//   } catch (err) {
-//     console.error('Error processing image:', err);
-//     res.status(500).json({ message: 'Error processing image' });
-//   }
-// });
-
-// // Search route for finding similar images
-// app.post('/search', async (req, res) => {
-//   const { imageBase64 } = req.body;
-
-//   if (!imageBase64) {
-//     return res.status(400).json({ message: 'No image data provided' });
-//   }
-//   try {
-//     const uploadedImagePath = await saveBase64Image(imageBase64);
-//     // Ensure getImageHash and hammingDistance are defined or imported correctly
-//     const uploadedHashes = await getImageHash(uploadedImagePath);
-
-//     // Fetch all the hashes from the database (for all images stored)
-//     const query = 'SELECT filename, hash FROM ZeeImages';
-//     const request = new mssql.Request();
-//     const result = await request.query(query);
-
-//     const similarityThreshold = 0.6;
-//     const similarImages = [];
-
-//     result.recordset.forEach((image) => {
-//       uploadedHashes.forEach(uploadedHash => {
-//         const distance = hammingDistance(uploadedHash, image.hash);
-//         const similarity = 1 - (distance / uploadedHash.length);
-
-//         if (similarity >= similarityThreshold) {
-//           similarImages.push({
-//             filename: image.filename,
-//             hash: image.hash,
-//             similarity: similarity,
-//           });
-//         }
-//       });
-//     });
-
-//     similarImages.sort((a, b) => b.similarity - a.similarity);
-
-//     if (similarImages.length > 0) {
-//       res.json({
-//         similarImages: similarImages,
-//         message: 'Similar images found',
-//       });
-//     } else {
-//       res.json({ message: 'No similar images found' });
-//     }
-//   } catch (err) {
-//     console.error('Error processing image for search:', err);
-//     res.status(500).json({ message: 'Error processing image for search' });
-//   }
-// });
-
-// // Start the Express server
-// app.listen(port, () => {
-//   console.log(`Server running on http://localhost:${port}`);
-// });
- 
