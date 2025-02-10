@@ -10,7 +10,11 @@ const cors = require('cors');
 const { Buffer } = require('buffer');
 const app = express();
 const port = 4000;
-app.use(cors());
+app.use(cors({
+  origin:'https://img-frontend-kappa.vercel.app',
+  methods:['GET','POST'],
+  allowedHeaders:['Content-Type','Authorization']
+}));
 app.use(express.json({ limit: '50mb' }));
 
 
