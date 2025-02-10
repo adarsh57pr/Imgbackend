@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const sharp = require('sharp'); 
+const sharp = require('sharp');
 const imageHash = require('image-hash');
 const mssql = require('mssql');
 require('dotenv').config();
@@ -16,10 +16,10 @@ app.use(express.json({ limit: '50mb' }));
 
 
 const dbConfig = {
-  user : process.env.DB_USER,
-  password : process.env.DB_PASSWORD,
-  server : process.env.DB_SERVER,
-  database : process.env.DB_BASE,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_BASE,
   options: {
     encrypt: true,
     trustServerCertificate: true,
@@ -76,6 +76,8 @@ const getImageHash = (imagePath) => {
 
         sharp(imagePath)
           .rotate(angle)
+          .resize(256, 256)
+          .toBuffer()
           .toFile(rotatedImagePath, (err, info) => {
             if (err) {
               rejectRotation(`Error rotating image by ${angle} degrees: ` + err);
@@ -174,7 +176,7 @@ app.post('/search', async (req, res) => {
       uploadedHashes.forEach(uploadedHash => {
         const distance = hammingDistance(uploadedHash, image.hash);
         const similarity = 1 - (distance / uploadedHash.length); // Convert distance to similarity score
-        
+
         // If similarity is above the new lower threshold, consider it a similar image
         if (similarity >= similarityThreshold) {
           similarImages.push({
