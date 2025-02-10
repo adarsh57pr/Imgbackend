@@ -11,12 +11,7 @@ const { Buffer } = require('buffer');
 
 const app = express();
 const port = 4000;
-app.use(cors({
-  origin: '*',  // or '*' to allow all domains (not recommended for production)
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-}));
-
+app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
 
@@ -170,7 +165,7 @@ app.post('/search', async (req, res) => {
     const result = await request.query(query);
 
     // Set a lower threshold for similarity to get more results
-    const similarityThreshold = 0.5;  // Adjusted lower threshold to capture more similar images
+    const similarityThreshold = 0.6;  // Adjusted lower threshold to capture more similar images
     const similarImages = [];
 
     // Iterate over each image stored in the database
@@ -208,12 +203,8 @@ app.post('/search', async (req, res) => {
   }
 });
 
-app.listen(port,'0.0.0.0', () => {
+
+
+app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-
-
-
-
-
-
