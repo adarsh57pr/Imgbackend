@@ -8,7 +8,6 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const { Buffer } = require('buffer');
-
 const app = express();
 const port = 4000;
 app.use(cors());
@@ -76,8 +75,8 @@ const getImageHash = (imagePath) => {
 
         sharp(imagePath)
           .rotate(angle)
-          .resize(256, 256)
-          .toBuffer()
+          // .resize(256, 256)
+          // .toBuffer()
           .toFile(rotatedImagePath, (err, info) => {
             if (err) {
               rejectRotation(`Error rotating image by ${angle} degrees: ` + err);
