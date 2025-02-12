@@ -79,7 +79,7 @@ const getImageHash = (imagePath) => {
 
         sharp(imagePath)
           .rotate(angle)
-          .resize(512, 512)  // Resize the image to standard size
+          .resize(256, 256)  // Resize the image to standard size
           .normalize()        // Normalize the image
           .modulate({
             brightness: 1.2,  // Enhance brightness
