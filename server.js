@@ -79,8 +79,12 @@ const getImageHash = (imagePath) => {
 
         sharp(imagePath)
           .rotate(angle)
-          // .resize(256, 256)
-          // .toBuffer()
+          .resize(512, 512)  // Resize the image to standard size
+          .normalize(-1,1)        // Normalize the image
+          .modulate({
+            brightness: 1.2,  // Enhance brightness
+            saturation: 1.1, 
+          })
           .toFile(rotatedImagePath, (err, info) => {
             if (err) {
               rejectRotation(`Error rotating image by ${angle} degrees: ` + err);
