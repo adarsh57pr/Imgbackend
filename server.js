@@ -10,6 +10,7 @@ const cors = require('cors');
 const { Buffer } = require('buffer');
 const app = express();
 const port = 4000;
+
 app.use(cors({
   origin:'https://img-frontend-kappa.vercel.app',
   methods:['GET','POST'],
@@ -28,7 +29,6 @@ const dbConfig = {
     trustServerCertificate: true,
   }
 };
-
 
 mssql.connect(dbConfig)
   .then(() => {
@@ -213,3 +213,103 @@ app.post('/search', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
+
+
+
+
+
+
+
+// const express = require('express');
+// const bodyParser = require('body-parser');
+// const multer = require('multer');
+// const mssql = require('mssql');
+// const cv = require('opencv4nodejs');
+
+// const app = express();
+// const port = 3000;
+
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+// // Setup SQL Server connection
+// const config = {
+//   user: 'your_db_user',
+//   password: 'your_db_password',
+//   server: 'your_db_server', // e.g., localhost or IP
+//   database: 'your_db_name'
+// };
+
+// // Setup Multer for file upload
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage: storage });
+
+// // Feature extraction function (using OpenCV)
+// const extractFeatures = (imageBuffer) => {
+//   const image = cv.imdecode(imageBuffer); // Convert buffer to image
+//   const grayImage = image.bgrToGray(); // Convert to grayscale
+
+//   // Extract features (e.g., SIFT, ORB, or custom features)
+//   const detector = new cv.ORB();
+//   const keypoints = detector.detect(grayImage);
+//   const descriptors = detector.compute(grayImage, keypoints);
+
+//   // For simplicity, let's assume descriptors are our features
+//   return descriptors;
+// };
+
+// // Endpoint to scan an object and store its features
+// app.post('/scan-object', upload.single('image'), async (req, res) => {
+//   try {
+//     // Extract features from the uploaded image
+//     const features = extractFeatures(req.file.buffer);
+
+//     // Store the features in the database
+//     await mssql.connect(config);
+//     const result = await new mssql.Request()
+//       .input('name', mssql.NVarChar, req.body.name)
+//       .input('features', mssql.VarBinary, features)
+//       .query('INSERT INTO Objects (name, features) VALUES (@name, @features)');
+
+//     res.status(200).json({ message: 'Object scanned and stored successfully!' });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// // Endpoint to search for similar objects based on scanned features
+// app.post('/search-object', upload.single('image'), async (req, res) => {
+//   try {
+//     const queryImageFeatures = extractFeatures(req.file.buffer);
+
+//     // Compare query features with database entries
+//     await mssql.connect(config);
+//     const result = await new mssql.Request()
+//       .query('SELECT id, features FROM Objects');
+
+//     const similarObjects = result.recordset.map(record => {
+//       // For simplicity, assume we use a feature distance metric (e.g., Euclidean)
+//       const dbFeatures = record.features;
+//       const distance = compareFeatures(queryImageFeatures, dbFeatures);  // Implement a distance comparison
+
+//       return { id: record.id, name: record.name, distance };
+//     });
+
+//     // Sort by the distance (ascending order) to find the most similar objects
+//     similarObjects.sort((a, b) => a.distance - b.distance);
+
+//     res.status(200).json({ similarObjects });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// // Compare two feature sets (implement according to your needs)
+// const compareFeatures = (features1, features2) => {
+//   // Simple comparison function - you may use advanced metrics
+//   return cv.norm(features1, features2, cv.NORM_L2);  // L2 norm (Euclidean distance)
+// };
+
+// app.listen(port, () => {
+//   console.log(`Server running on http://localhost:${port}`);
+// });
