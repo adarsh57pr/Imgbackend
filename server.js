@@ -67,7 +67,7 @@ const saveBase64Image = (base64Str) => {
 
 const getImageHash = (imagePath) => {
   return new Promise((resolve, reject) => {
-    const angles = [0, 90, 180, 270];  // List of angles to rotate the image
+    const angles = [0, 45, 90, 135, 180, 225, 270,315];  // List of angles to rotate the image
     const hashes = [];  // To store the hashes for each rotation
 
     const promises = angles.map((angle) => {
@@ -158,7 +158,6 @@ app.post('/search', async (req, res) => {
   if (!imageBase64) {
     return res.status(400).json({ message: 'No image data provided' });
   }
-
   try {
     // Save the uploaded image and generate its hashes for different rotations
     const uploadedImagePath = await saveBase64Image(imageBase64);
@@ -168,7 +167,6 @@ app.post('/search', async (req, res) => {
     const query = 'SELECT filename, hash FROM ZeeImages';
     const request = new mssql.Request();
     const result = await request.query(query);
-
     // Set a lower threshold for similarity to get more results
     const similarityThreshold = 0.6;  // Adjusted lower threshold to capture more similar images
     const similarImages = [];
