@@ -80,7 +80,7 @@ const getImageHash = (imagePath) => {
         sharp(imagePath)
           .rotate(angle)
           .resize(256, 256)  // Resize the image to standard size
-          .normalize()        // Normalize the image
+          .normalize([-1,1])        // Normalize the image
           .toFile(rotatedImagePath, (err, info) => {
             if (err) {
               rejectRotation(`Error rotating image by ${angle} degrees: ` + err);
