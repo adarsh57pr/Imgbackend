@@ -80,7 +80,7 @@ const getImageHash = (imagePath) => {
         sharp(imagePath)
           .rotate(angle)
           .resize(512, 512)  // Resize the image to standard size
-          .normalize(-1,1)        // Normalize the image
+          .normalize()        // Normalize the image
           .modulate({
             brightness: 1.2,  // Enhance brightness
             saturation: 1.1, 
@@ -174,7 +174,7 @@ app.post('/search', async (req, res) => {
     const result = await request.query(query);
 
     // Set a lower threshold for similarity to get more results
-    const similarityThreshold = 0.7;  // Adjusted lower threshold to capture more similar images
+    const similarityThreshold = 0.6;  // Adjusted lower threshold to capture more similar images
     const similarImages = [];
 
     // Iterate over each image stored in the database
